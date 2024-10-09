@@ -331,6 +331,12 @@ func (c *nativeContext) Sender() *User {
 		if b := c.u.BoostRemoved; b.Source != nil {
 			return b.Source.Booster
 		}
+	case c.u.BusinessConnection != nil:
+		return c.u.BusinessConnection.Sender
+	case c.u.BusinessMessage != nil:
+		return c.u.BusinessMessage.Sender
+	case c.u.EditedBusinessMessage != nil:
+		return c.u.EditedBusinessMessage.Sender
 	}
 	return nil
 }
