@@ -214,6 +214,10 @@ func (c *nativeContext) Message() *Message {
 		return c.u.ChannelPost
 	case c.u.EditedChannelPost != nil:
 		return c.u.EditedChannelPost
+	case c.u.BusinessMessage != nil:
+		return c.u.BusinessMessage
+	case c.u.EditedBusinessMessage != nil:
+		return c.u.EditedBusinessMessage
 	default:
 		return nil
 	}
@@ -333,10 +337,6 @@ func (c *nativeContext) Sender() *User {
 		}
 	case c.u.BusinessConnection != nil:
 		return c.u.BusinessConnection.Sender
-	case c.u.BusinessMessage != nil:
-		return c.u.BusinessMessage.Sender
-	case c.u.EditedBusinessMessage != nil:
-		return c.u.EditedBusinessMessage.Sender
 	}
 	return nil
 }
