@@ -770,7 +770,7 @@ func (b *Bot) DeleteMany(msgs []Editable) error {
 //
 // Currently, Telegram supports only a narrow range of possible
 // actions, these are aligned as constants of this package.
-func (b *Bot) Notify(to Recipient, action ChatAction, threadID ...int) error {
+func (b *Bot) Notify(to Recipient, action ChatAction, businessConnectionId *string, threadID ...int) error {
 	if to == nil {
 		return ErrBadRecipient
 	}
@@ -782,6 +782,9 @@ func (b *Bot) Notify(to Recipient, action ChatAction, threadID ...int) error {
 
 	if len(threadID) > 0 {
 		params["message_thread_id"] = strconv.Itoa(threadID[0])
+	}
+	if businessConnectionId != nil {
+		params["business_connection_id"] = *businessConnectionId
 	}
 
 	_, err := b.Raw("sendChatAction", params)

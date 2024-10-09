@@ -521,7 +521,7 @@ func (c *nativeContext) DeleteAfter(d time.Duration) *time.Timer {
 }
 
 func (c *nativeContext) Notify(action ChatAction) error {
-	return c.b.Notify(c.Recipient(), action)
+	return c.b.Notify(c.Recipient(), action, nil)
 }
 
 func (c *nativeContext) Ship(what ...interface{}) error {

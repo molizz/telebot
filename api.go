@@ -62,7 +62,7 @@ type API interface {
 	MyDescription(language string) (*BotInfo, error)
 	MyName(language string) (*BotInfo, error)
 	MyShortDescription(language string) (*BotInfo, error)
-	Notify(to Recipient, action ChatAction, threadID ...int) error
+	Notify(to Recipient, action ChatAction, businessConnectionId *string, threadID ...int) error
 	Pin(msg Editable, opts ...interface{}) error
 	ProfilePhotosOf(user *User) ([]Photo, error)
 	Promote(chat *Chat, member *ChatMember) error
