@@ -27,6 +27,7 @@ type User struct {
 	SupportsInline       bool `json:"supports_inline_queries"`
 	CanConnectToBusiness bool `json:"can_connect_to_business"`
 	HasMainWebApp        bool `json:"has_main_web_app"`
+	HasTopicsEnabled     bool `json:"has_topics_enabled"`
 }
 
 // Recipient returns user ID (see Recipient interface).

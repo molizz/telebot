@@ -316,6 +316,29 @@ func (v *Venue) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 	return extractMessage(data)
 }
 
+// Send delivers contact through bot b to recipient.
+func (c *Contact) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
+	params := map[string]string{
+		"chat_id":      to.Recipient(),
+		"phone_number": c.PhoneNumber,
+		"first_name":   c.FirstName,
+	}
+	if c.LastName != "" {
+		params["last_name"] = c.LastName
+	}
+	if c.VCard != "" {
+		params["vcard"] = c.VCard
+	}
+	b.embedSendOptions(params, opt)
+
+	data, err := b.Raw("sendContact", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return extractMessage(data)
+}
+
 // Send delivers invoice through bot b to recipient.
 func (i *Invoice) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 	params := i.params()

@@ -355,6 +355,15 @@ type Message struct {
 
 	// Service message: the user allowed the bot added to the attachment menu to write messages
 	WriteAccessAllowed *WriteAccessAllowed `json:"write_access_allowed,omitempty"`
+
+	// Optional. Information about the direct messages chat topic that contains the message
+	DirectMessagesTopic *DirectMessagesTopic `json:"direct_messages_topic,omitempty"`
+}
+
+// DirectMessagesTopic
+type DirectMessagesTopic struct {
+	TopicID int `json:"topic_id"`
+	User    *User
 }
 
 // MessageEntity object represents "special" parts of text messages,
