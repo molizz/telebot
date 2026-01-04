@@ -427,6 +427,7 @@ func (b *Bot) Reply(to *Message, what interface{}, opts ...interface{}) (*Messag
 	}
 
 	sendOpts.ReplyTo = to
+	sendOpts.ThreadID = to.ThreadID
 	return b.Send(to.Chat, what, sendOpts)
 }
 

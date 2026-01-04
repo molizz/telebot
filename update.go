@@ -53,11 +53,6 @@ func (b *Bot) ProcessContext(c Context) {
 			b.handle(OnForward, c)
 		}
 
-		if m.ReplyTo != nil && m.ReplyTo.TopicCreated != nil {
-			b.handle(OnThreadedTopicCreated, c)
-			return
-		}
-
 		// Commands
 		if m.Text != "" {
 			// Filtering malicious messages
