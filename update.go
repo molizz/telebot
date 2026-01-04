@@ -140,6 +140,10 @@ func (b *Bot) ProcessContext(c Context) {
 			b.handle(OnTopicEdited, c)
 			return
 		}
+		if m.ReplyTo != nil && m.ReplyTo.TopicCreated != nil {
+			b.handle(OnThreadedTopicCreated, c)
+			return
+		}
 		if m.GeneralTopicHidden != nil {
 			b.handle(OnGeneralTopicHidden, c)
 			return

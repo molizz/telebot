@@ -77,6 +77,8 @@ const (
 	OnGeneralTopicUnhidden = "\ageneral_topic_unhidden"
 	OnWriteAccessAllowed   = "\awrite_access_allowed"
 
+	OnThreadedTopicCreated = "\athreaded_topic_created"
+
 	OnAddedToGroup      = "\aadded_to_group"
 	OnUserJoined        = "\auser_joined"
 	OnUserLeft          = "\auser_left"
