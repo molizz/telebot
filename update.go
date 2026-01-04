@@ -53,6 +53,11 @@ func (b *Bot) ProcessContext(c Context) {
 			b.handle(OnForward, c)
 		}
 
+		if m.ReplyTo != nil && m.ReplyTo.TopicCreated != nil {
+			b.handle(OnThreadedTopicCreated, c)
+			return
+		}
+
 		// Commands
 		if m.Text != "" {
 			// Filtering malicious messages
@@ -122,10 +127,6 @@ func (b *Bot) ProcessContext(c Context) {
 		}
 		if m.RefundedPayment != nil {
 			b.handle(OnRefund, c)
-			return
-		}
-		if m.ReplyTo != nil && m.ReplyTo.TopicCreated != nil {
-			b.handle(OnThreadedTopicCreated, c)
 			return
 		}
 		if m.TopicCreated != nil {
