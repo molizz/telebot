@@ -300,6 +300,51 @@ func (b *Bot) Send(to Recipient, what interface{}, opts ...interface{}) (*Messag
 	}
 }
 
+// SendMessageDraft streams a partial message while it's being generated.
+// Supported only for bots with forum topic mode enabled.
+func (b *Bot) SendMessageDraft(to Recipient, draftID int, text string, opts ...interface{}) (bool, error) {
+	if to == nil {
+		return false, ErrBadRecipient
+	}
+
+	params := map[string]string{
+		"chat_id":  to.Recipient(),
+		"draft_id": strconv.Itoa(draftID),
+		"text":     text,
+	}
+
+	sendOpts := b.extractOptions(opts)
+	if sendOpts != nil {
+		if sendOpts.ThreadID != 0 {
+			params["message_thread_id"] = strconv.Itoa(sendOpts.ThreadID)
+		}
+
+		if sendOpts.ParseMode != ModeDefault {
+			params["parse_mode"] = sendOpts.ParseMode
+		}
+
+		if len(sendOpts.Entities) > 0 {
+			delete(params, "parse_mode")
+			entities, _ := json.Marshal(sendOpts.Entities)
+			params["entities"] = string(entities)
+		}
+	}
+
+	data, err := b.Raw("sendMessageDraft", params)
+	if err != nil {
+		return false, err
+	}
+
+	var resp struct {
+		Result bool `json:"result"`
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return false, wrapError(err)
+	}
+
+	return resp.Result, nil
+}
+
 // SendPaid sends multiple instances of paid media as a single message.
 // To include the caption, make sure the first PaidInputtable of an album has it.
 func (b *Bot) SendPaid(to Recipient, stars int, a PaidAlbum, opts ...interface{}) (*Message, error) {
