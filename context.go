@@ -112,6 +112,10 @@ type Context interface {
 	// See SendAlbum from bot.go.
 	SendAlbum(a Album, opts ...interface{}) error
 
+	// SendMessageDraft sends a message draft to the current recipient.
+	// See SendMessageDraft from bot.go.
+	SendMessageDraft(draftID int, text string, opts ...interface{}) error
+
 	// Reply replies to the current message.
 	// See Reply from bot.go.
 	Reply(what interface{}, opts ...interface{}) error
@@ -449,6 +453,11 @@ func (c *nativeContext) Send(what interface{}, opts ...interface{}) error {
 
 func (c *nativeContext) SendAlbum(a Album, opts ...interface{}) error {
 	_, err := c.b.SendAlbum(c.Recipient(), a, opts...)
+	return err
+}
+
+func (c *nativeContext) SendMessageDraft(draftID int, text string, opts ...interface{}) error {
+	_, err := c.b.SendMessageDraft(c.Recipient(), draftID, text, opts...)
 	return err
 }
 
