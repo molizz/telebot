@@ -434,19 +434,6 @@ func (c *nativeContext) Args() []string {
 }
 
 func (c *nativeContext) Send(what interface{}, opts ...interface{}) error {
-	if c.Message() != nil && c.Message().ThreadID > 0 {
-		if len(opts) == 0 {
-			opts = []interface{}{&SendOptions{
-				ThreadID: c.Message().ThreadID,
-			}}
-		} else {
-			for _, opt := range opts {
-				if opt, ok := opt.(*SendOptions); ok {
-					opt.ThreadID = c.Message().ThreadID
-				}
-			}
-		}
-	}
 	_, err := c.b.Send(c.Recipient(), what, opts...)
 	return err
 }
