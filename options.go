@@ -34,6 +34,9 @@ const (
 
 	// RemoveKeyboard = ReplyMarkup.RemoveKeyboard
 	RemoveKeyboard
+
+	// IgnoreThread is used to ignore the thread when responding to a message via context.
+	IgnoreThread
 )
 
 // Placeholder is used to set input field placeholder as a send option.
@@ -92,6 +95,14 @@ type SendOptions struct {
 
 	// Unique identifier of the message effect to be added to the message; for private chats only
 	EffectID string
+
+	// Payload is a bot-defined paid media payload, returned in the PaidMediaPurchased update.
+	// 0-128 characters. Used only for sendPaidMedia.
+	Payload string
+
+	// AllowPaidBroadcast allows the message to be sent to users who have not yet
+	// unlocked access to paid channels. Only for messages sent to channels.
+	AllowPaidBroadcast bool
 }
 
 func (og *SendOptions) copy() *SendOptions {
@@ -117,6 +128,8 @@ func (b *Bot) extractOptions(how []interface{}) *SendOptions {
 			}
 		case *ReplyParams:
 			opts.ReplyParams = opt
+		case *Topic:
+			opts.ThreadID = opt.ThreadID
 		case Option:
 			switch opt {
 			case NoPreview:
@@ -218,10 +231,14 @@ func (b *Bot) embedSendOptions(params map[string]string, opt *SendOptions) {
 	if opt.EffectID != "" {
 		params["message_effect_id"] = opt.EffectID
 	}
+
+	if opt.AllowPaidBroadcast {
+		params["allow_paid_broadcast"] = "true"
+	}
 }
 
 func processButtons(keys [][]InlineButton) {
-	if keys == nil || len(keys) < 1 || len(keys[0]) < 1 {
+	if len(keys) < 1 || len(keys[0]) < 1 {
 		return
 	}
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/viper"
-	tele "gopkg.in/telebot.v3"
+	tele "gopkg.in/telebot.v4"
 )
 
 type Settings struct {
@@ -195,7 +195,7 @@ func (lt *Layout) UnmarshalYAML(data []byte) error {
 			}
 
 			markup.inline = new(bool)
-			markup.Markup.keyboard = tmpl
+			markup.keyboard = tmpl
 			lt.markups[k] = markup.Markup
 		}
 	}

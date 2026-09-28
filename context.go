@@ -73,6 +73,9 @@ type Context interface {
 	// BoostRemoved returns the boost removed from a chat instance.
 	BoostRemoved() *BoostRemoved
 
+	// PurchasedPaidMedia returns the purchased paid media instance.
+	PurchasedPaidMedia() *PaidMediaPurchased
+
 	// Sender returns the current recipient, depending on the context type.
 	// Returns nil if user is not presented.
 	Sender() *User
@@ -89,6 +92,9 @@ type Context interface {
 	// Text returns the message text, depending on the context type.
 	// In the case when no related data presented, returns an empty string.
 	Text() string
+
+	// ThreadID returns the current message thread ID.
+	ThreadID() int
 
 	// Entities returns the message entities, whether it's media caption's or the text's.
 	// In the case when no entities presented, returns a nil.
@@ -169,6 +175,10 @@ type Context interface {
 	// See Answer from bot.go.
 	Answer(resp *QueryResponse) error
 
+	// AnswerGuest sends a response to the current guest message.
+	// See AnswerGuest from guest.go.
+	AnswerGuest(result Result) error
+
 	// Respond sends a response for the current callback query.
 	// See Respond from bot.go.
 	Respond(resp ...*CallbackResponse) error
@@ -207,6 +217,8 @@ func (c *nativeContext) Message() *Message {
 	switch {
 	case c.u.Message != nil:
 		return c.u.Message
+	case c.u.GuestMessage != nil:
+		return c.u.GuestMessage
 	case c.u.Callback != nil:
 		return c.u.Callback.Message
 	case c.u.EditedMessage != nil:
@@ -307,6 +319,10 @@ func (c *nativeContext) Boost() *BoostUpdated {
 
 func (c *nativeContext) BoostRemoved() *BoostRemoved {
 	return c.u.BoostRemoved
+}
+
+func (c *nativeContext) PurchasedPaidMedia() *PaidMediaPurchased {
+	return c.u.PurchasedPaidMedia
 }
 
 func (c *nativeContext) Sender() *User {
@@ -433,12 +449,52 @@ func (c *nativeContext) Args() []string {
 	return nil
 }
 
+func (c *nativeContext) ThreadID() int {
+	switch {
+	case c.Message() != nil:
+		return c.Message().ThreadID
+	default:
+		return 0
+	}
+}
+
 func (c *nativeContext) Send(what interface{}, opts ...interface{}) error {
+	opts = c.inheritOpts(opts...)
 	_, err := c.b.Send(c.Recipient(), what, opts...)
 	return err
 }
 
+func (c *nativeContext) inheritOpts(opts ...interface{}) []interface{} {
+	var (
+		ignoreThread bool
+	)
+
+	if opts == nil {
+		opts = make([]interface{}, 0)
+	}
+
+	for _, opt := range opts {
+		switch opt.(type) {
+		case Option:
+			switch opt {
+			case IgnoreThread:
+				ignoreThread = true
+			default:
+			}
+		}
+	}
+
+	switch {
+	case !ignoreThread && c.ThreadID() != 0:
+		opts = append(opts, &Topic{ThreadID: c.ThreadID()})
+	}
+
+	return opts
+}
+
 func (c *nativeContext) SendAlbum(a Album, opts ...interface{}) error {
+	opts = c.inheritOpts(opts...)
+
 	_, err := c.b.SendAlbum(c.Recipient(), a, opts...)
 	return err
 }
@@ -453,6 +509,7 @@ func (c *nativeContext) Reply(what interface{}, opts ...interface{}) error {
 	if msg == nil {
 		return ErrBadContext
 	}
+	opts = c.inheritOpts(opts...)
 	_, err := c.b.Reply(msg, what, opts...)
 	return err
 }
@@ -472,6 +529,8 @@ func (c *nativeContext) ForwardTo(to Recipient, opts ...interface{}) error {
 }
 
 func (c *nativeContext) Edit(what interface{}, opts ...interface{}) error {
+	opts = c.inheritOpts(opts...)
+
 	if c.u.InlineResult != nil {
 		_, err := c.b.Edit(c.u.InlineResult, what, opts...)
 		return err
@@ -484,6 +543,8 @@ func (c *nativeContext) Edit(what interface{}, opts ...interface{}) error {
 }
 
 func (c *nativeContext) EditCaption(caption string, opts ...interface{}) error {
+	opts = c.inheritOpts(opts...)
+
 	if c.u.InlineResult != nil {
 		_, err := c.b.EditCaption(c.u.InlineResult, caption, opts...)
 		return err
@@ -530,7 +591,7 @@ func (c *nativeContext) DeleteAfter(d time.Duration) *time.Timer {
 }
 
 func (c *nativeContext) Notify(action ChatAction) error {
-	return c.b.Notify(c.Recipient(), action, nil)
+	return c.b.Notify(c.Recipient(), action, nil, c.ThreadID())
 }
 
 func (c *nativeContext) Ship(what ...interface{}) error {
@@ -567,6 +628,14 @@ func (c *nativeContext) Answer(resp *QueryResponse) error {
 		return errors.New("telebot: context inline query is nil")
 	}
 	return c.b.Answer(c.u.Query, resp)
+}
+
+func (c *nativeContext) AnswerGuest(result Result) error {
+	if c.u.GuestMessage == nil {
+		return errors.New("telebot: context guest message is nil")
+	}
+	_, err := c.b.AnswerGuest(c.u.GuestMessage, result)
+	return err
 }
 
 func (c *nativeContext) Set(key string, value interface{}) {

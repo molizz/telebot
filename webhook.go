@@ -134,7 +134,7 @@ func (h *Webhook) Poll(b *Bot, dest chan Update, stop chan struct{}) {
 	h.bot = b
 
 	if h.Listen == "" {
-		h.waitForStop(stop)
+		<-stop
 		return
 	}
 
@@ -144,7 +144,7 @@ func (h *Webhook) Poll(b *Bot, dest chan Update, stop chan struct{}) {
 	}
 
 	go func(stop chan struct{}) {
-		h.waitForStop(stop)
+		<-stop
 		s.Shutdown(context.Background())
 	}(stop)
 
@@ -153,11 +153,6 @@ func (h *Webhook) Poll(b *Bot, dest chan Update, stop chan struct{}) {
 	} else {
 		s.ListenAndServe()
 	}
-}
-
-func (h *Webhook) waitForStop(stop chan struct{}) {
-	<-stop
-	// close(stop)
 }
 
 // The handler simply reads the update from the body of the requests
