@@ -27,6 +27,7 @@ type User struct {
 	SupportsGuest        bool `json:"supports_guest_queries"`
 	CanConnectToBusiness bool `json:"can_connect_to_business"`
 	HasMainWebApp        bool `json:"has_main_web_app"`
+	CanManageBots        bool `json:"can_manage_bots,omitempty"`
 	HasTopicsEnabled     bool `json:"has_topics_enabled"`
 
 	// Bot API 9.4: (Optional) True, if the bot allows users to create

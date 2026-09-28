@@ -372,6 +372,9 @@ type Message struct {
 	// Service message: the user allowed the bot added to the attachment menu to write messages
 	WriteAccessAllowed *WriteAccessAllowed `json:"write_access_allowed,omitempty"`
 
+	// Service message: a user created a bot managed by the current bot.
+	ManagedBotCreated *ManagedBotCreated `json:"managed_bot_created,omitempty"`
+
 	// Optional. Information about the direct messages chat topic that contains the message
 	DirectMessagesTopic *DirectMessagesTopic `json:"direct_messages_topic,omitempty"`
 

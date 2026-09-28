@@ -76,6 +76,9 @@ type Context interface {
 	// PurchasedPaidMedia returns the purchased paid media instance.
 	PurchasedPaidMedia() *PaidMediaPurchased
 
+	// ManagedBot returns the managed bot update, if present.
+	ManagedBot() *ManagedBotUpdated
+
 	// Sender returns the current recipient, depending on the context type.
 	// Returns nil if user is not presented.
 	Sender() *User
@@ -325,6 +328,10 @@ func (c *nativeContext) PurchasedPaidMedia() *PaidMediaPurchased {
 	return c.u.PurchasedPaidMedia
 }
 
+func (c *nativeContext) ManagedBot() *ManagedBotUpdated {
+	return c.u.ManagedBot
+}
+
 func (c *nativeContext) Sender() *User {
 	switch {
 	case c.u.Callback != nil:
@@ -355,6 +362,8 @@ func (c *nativeContext) Sender() *User {
 		if b := c.u.BoostRemoved; b.Source != nil {
 			return b.Source.Booster
 		}
+	case c.u.ManagedBot != nil:
+		return c.u.ManagedBot.User
 	case c.u.BusinessConnection != nil:
 		return c.u.BusinessConnection.Sender
 	}

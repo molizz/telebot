@@ -82,22 +82,23 @@ func (r *ReplyMarkup) copy() *ReplyMarkup {
 
 // Btn is a constructor button, which will later become either a reply, or an inline button.
 type Btn struct {
-	Unique            string          `json:"unique,omitempty"`
-	Text              string          `json:"text,omitempty"`
-	IconCustomEmojiID string          `json:"icon_custom_emoji_id,omitempty"`
-	Style             ButtonStyle     `json:"style,omitempty"`
-	URL               string          `json:"url,omitempty"`
-	Data              string          `json:"callback_data,omitempty"`
-	InlineQuery       string          `json:"switch_inline_query,omitempty"`
-	InlineQueryChat   string          `json:"switch_inline_query_current_chat,omitempty"`
-	Login             *Login          `json:"login_url,omitempty"`
-	WebApp            *WebApp         `json:"web_app,omitempty"`
-	Contact           bool            `json:"request_contact,omitempty"`
-	Location          bool            `json:"request_location,omitempty"`
-	Poll              PollType        `json:"request_poll,omitempty"`
-	User              *ReplyRecipient `json:"request_user,omitempty"`
-	Chat              *ReplyRecipient `json:"request_chat,omitempty"`
-	CopyText          *CopyTextButton `json:"copy_text,omitempty"`
+	Unique            string                           `json:"unique,omitempty"`
+	Text              string                           `json:"text,omitempty"`
+	IconCustomEmojiID string                           `json:"icon_custom_emoji_id,omitempty"`
+	Style             ButtonStyle                      `json:"style,omitempty"`
+	URL               string                           `json:"url,omitempty"`
+	Data              string                           `json:"callback_data,omitempty"`
+	InlineQuery       string                           `json:"switch_inline_query,omitempty"`
+	InlineQueryChat   string                           `json:"switch_inline_query_current_chat,omitempty"`
+	Login             *Login                           `json:"login_url,omitempty"`
+	WebApp            *WebApp                          `json:"web_app,omitempty"`
+	Contact           bool                             `json:"request_contact,omitempty"`
+	Location          bool                             `json:"request_location,omitempty"`
+	Poll              PollType                         `json:"request_poll,omitempty"`
+	User              *ReplyRecipient                  `json:"request_user,omitempty"`
+	Chat              *ReplyRecipient                  `json:"request_chat,omitempty"`
+	ManagedBot        *KeyboardButtonRequestManagedBot `json:"request_managed_bot,omitempty"`
+	CopyText          *CopyTextButton                  `json:"copy_text,omitempty"`
 }
 
 // ButtonStyle is the visual style of a keyboard button. Bot API 9.4.
@@ -214,6 +215,12 @@ func (r *ReplyMarkup) Chat(text string, chat *ReplyRecipient) Btn {
 	return Btn{Text: text, Chat: chat}
 }
 
+// ManagedBot creates a reply button requesting a managed bot in a private chat.
+// The current bot must enable bot management in the BotFather Mini App.
+func (r *ReplyMarkup) ManagedBot(text string, request *KeyboardButtonRequestManagedBot) Btn {
+	return Btn{Text: text, ManagedBot: request}
+}
+
 func (r *ReplyMarkup) Login(text string, login *Login) Btn {
 	return Btn{Login: login, Text: text}
 }
@@ -235,12 +242,13 @@ type ReplyButton struct {
 	IconCustomEmojiID string      `json:"icon_custom_emoji_id,omitempty"`
 	Style             ButtonStyle `json:"style,omitempty"`
 
-	Contact  bool            `json:"request_contact,omitempty"`
-	Location bool            `json:"request_location,omitempty"`
-	Poll     PollType        `json:"request_poll,omitempty"`
-	User     *ReplyRecipient `json:"request_users,omitempty"`
-	Chat     *ReplyRecipient `json:"request_chat,omitempty"`
-	WebApp   *WebApp         `json:"web_app,omitempty"`
+	Contact    bool                             `json:"request_contact,omitempty"`
+	Location   bool                             `json:"request_location,omitempty"`
+	Poll       PollType                         `json:"request_poll,omitempty"`
+	User       *ReplyRecipient                  `json:"request_users,omitempty"`
+	Chat       *ReplyRecipient                  `json:"request_chat,omitempty"`
+	ManagedBot *KeyboardButtonRequestManagedBot `json:"request_managed_bot,omitempty"`
+	WebApp     *WebApp                          `json:"web_app,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler. It allows passing PollType as a
@@ -366,11 +374,16 @@ func (b Btn) Reply() *ReplyButton {
 		Poll:              b.Poll,
 		User:              b.User,
 		Chat:              b.Chat,
+		ManagedBot:        b.ManagedBot,
 		WebApp:            b.WebApp,
 	}
 }
 
 func (b Btn) Inline() *InlineButton {
+	if b.ManagedBot != nil {
+		return nil
+	}
+
 	return &InlineButton{
 		Unique:            b.Unique,
 		Text:              b.Text,

@@ -56,6 +56,8 @@ type API interface {
 	ForwardMany(to Recipient, msgs []Editable, opts ...*SendOptions) ([]Message, error)
 	GameScores(user Recipient, msg Editable) ([]GameHighScore, error)
 	GetAvailableGifts() ([]Gift, error)
+	GetManagedBotAccessSettings(userID int64) (*BotAccessSettings, error)
+	GetManagedBotToken(userID int64) (string, error)
 	HideGeneralTopic(chat *Chat) error
 	InviteLink(chat *Chat) (string, error)
 	Leave(chat Recipient) error
@@ -77,6 +79,7 @@ type API interface {
 	RemoveWebhook(dropPending ...bool) error
 	ReopenGeneralTopic(chat *Chat) error
 	ReopenTopic(chat *Chat, topic *Topic) error
+	ReplaceManagedBotToken(userID int64) (string, error)
 	ReplaceStickerInSet(of Recipient, stickerSet, oldSticker string, sticker InputSticker) (bool, error)
 	Reply(to *Message, what interface{}, opts ...interface{}) (*Message, error)
 	Respond(c *Callback, resp ...*CallbackResponse) error
@@ -99,6 +102,7 @@ type API interface {
 	SetGroupPermissions(chat *Chat, perms Rights) error
 	SetGroupStickerSet(chat *Chat, setName string) error
 	SetGroupTitle(chat *Chat, title string) error
+	SetManagedBotAccessSettings(userID int64, restricted bool, addedUserIDs ...int64) error
 	SetMenuButton(chat *User, mb interface{}) error
 	SetMyDescription(desc, language string) error
 	SetMyName(name, language string) error

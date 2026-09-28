@@ -428,6 +428,58 @@ r.QueryChat("Share", query)
 r.Login("Login", &tele.Login{...})
 ```
 
+## Managed bots
+
+Enable management of other bots in the BotFather Mini App before requesting a
+managed bot. `b.Me.CanManageBots` reports this capability. Creation buttons are
+available only in private chats.
+
+```go
+menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+create := menu.ManagedBot("Create a bot", &tele.KeyboardButtonRequestManagedBot{
+	RequestID:     1, // Unique within this message.
+	SuggestedName: "My helper",
+})
+menu.Reply(menu.Row(create))
+
+b.Handle("/create", func(c tele.Context) error {
+	return c.Send("Create a bot to manage:", menu)
+})
+
+// Receives creation, token changes, and owner changes.
+b.Handle(tele.OnManagedBot, func(c tele.Context) error {
+	managed := c.ManagedBot()
+	settings, err := c.Bot().GetManagedBotAccessSettings(managed.Bot.ID)
+	if err != nil {
+		return err
+	}
+	if settings.IsAccessRestricted {
+		return c.Send("Your managed bot has restricted access.")
+	}
+	return c.Send("Your managed bot is available to all users.")
+})
+
+// Creation also produces a service message.
+b.Handle(tele.OnManagedBotCreated, func(c tele.Context) error {
+	created := c.Message().ManagedBotCreated
+	return c.Send("Created @" + created.Bot.Username)
+})
+```
+
+Use `b.GetManagedBotToken(botID)` to retrieve a managed bot's token, or
+`b.ReplaceManagedBotToken(botID)` to revoke it and obtain a new one. Both return
+`(string, error)`, and `botID` is the managed bot's user ID, not its owner's ID.
+
+`b.SetManagedBotAccessSettings(botID, true, userIDs...)` restricts access to the
+owner and up to 10 additional users. Omit the user IDs for owner-only access, or
+pass `false` to remove the restriction. The method returns an error on failure.
+
+If you configure `LongPoller.AllowedUpdates` or `Webhook.AllowedUpdates`
+explicitly, include `"managed_bot"` for bot updates and `"message"` for creation
+service messages. The exported `tele.AllowedUpdates` list includes both.
+For managed bot updates, `c.Sender()` and `c.Recipient()` return the creating user;
+`c.Chat()` and `c.Message()` are nil. `c.ManagedBot()` is nil for other updates.
+
 ## Inline mode
 So if you want to handle incoming inline queries you better plug the `tele.OnQuery`
 endpoint and then use the `Answer()` method to send a list of inline queries
